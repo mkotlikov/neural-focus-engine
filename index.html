@@ -223,6 +223,8 @@
                 <select id="styleSelect" onchange="setStyle(this.value)">
                     <option value="ambient">Ambient Drift</option>
                     <option value="active">Neuro Flow (Fast)</option>
+                    <option value="ethereal">Ethereal Planes</option>
+                    <option value="techno">Neural Techno</option>
                 </select>
             </div>
 
@@ -392,10 +394,20 @@
 
         function playNote(time) {
             // 1. Pick a random note from scale
-            // For 'active' style, we might bias towards higher octaves slightly
             let noteScale = SCALE;
+
             if (currentStyle === 'active') {
-                noteScale = SCALE.slice(5); // Remove lowest octave for cleaner fast sounds
+                noteScale = SCALE.slice(5); // Remove lowest octave
+            } else if (currentStyle === 'ethereal') {
+                noteScale = SCALE.slice(7); // ONLY high octaves
+            } else if (currentStyle === 'techno') {
+                // Bias towards Bass + Mids
+                noteScale = SCALE.slice(0, 10);
+            }
+
+            // Techno bass override
+            if (currentStyle === 'techno' && Math.random() < 0.3) {
+                noteScale = [SCALE[0], SCALE[3]]; // Force root or 5th bass sometimes
             }
 
             const freq = noteScale[Math.floor(Math.random() * noteScale.length)];
@@ -406,20 +418,37 @@
             if (currentStyle === 'ambient') {
                 duration = 2 + Math.random() * 4;
                 attack = duration * 0.2;
-                release = duration; // Long tail
+                release = duration;
                 wave1 = 'sine';
                 wave2 = 'triangle';
                 vol = 0.05 + Math.random() * 0.05;
-            } else { // Active / Flow
-                duration = 0.3 + Math.random() * 0.2; // Short staccato
-                attack = 0.01; // Instant hit
-                release = 0.4; // Short decay (pluck)
+
+            } else if (currentStyle === 'ethereal') {
+                duration = 4.0 + Math.random() * 4.0;
+                attack = 2.0;
+                release = 5.0; // Massive tail
+                wave1 = 'sine';
+                wave2 = 'sine'; // Pure tones
+                vol = 0.03; // Quiet
+
+            } else if (currentStyle === 'techno') {
+                duration = 0.15;
+                attack = 0.001;
+                release = 0.2; // Plucky
+                wave1 = 'square';
+                wave2 = 'sawtooth'; // Aggressive
+                vol = 0.04;
+
+            } else { // active
+                duration = 0.3 + Math.random() * 0.2;
+                attack = 0.01;
+                release = 0.4;
                 wave1 = 'triangle';
-                wave2 = 'sawtooth'; // More aggressive timbre
+                wave2 = 'sawtooth';
                 vol = 0.03 + Math.random() * 0.03;
             }
 
-            // 2. Create Oscillators (Layered for richness)
+            // 2. Create Oscillators
             const osc1 = audioCtx.createOscillator();
             const osc2 = audioCtx.createOscillator();
 
@@ -427,7 +456,15 @@
             osc2.type = wave2;
 
             osc1.frequency.value = freq;
-            osc2.frequency.value = freq * 1.005; // Slight detune for "chorus" effect
+
+            // Detune logic
+            if (currentStyle === 'ethereal') {
+                osc2.frequency.value = freq * 1.01; // Shimmer
+            } else if (currentStyle === 'techno') {
+                osc2.frequency.value = freq * 0.5; // Sub oscillator octave down!
+            } else {
+                osc2.frequency.value = freq * 1.005;
+            }
 
             // 3. Envelope (ADSR)
             const noteGain = audioCtx.createGain();
@@ -437,7 +474,6 @@
             noteGain.gain.exponentialRampToValueAtTime(0.001, time + release);
 
             // 4. Connect
-            // Connect to Reverb (which connects to Neural Modulator)
             osc1.connect(noteGain);
             osc2.connect(noteGain);
             noteGain.connect(reverbNode);
@@ -445,14 +481,14 @@
             // 5. Start/Stop
             osc1.start(time);
             osc2.start(time);
-            osc1.stop(time + release + 1); // Stop after release finishes
+            osc1.stop(time + release + 1);
             osc2.stop(time + release + 1);
 
             // Cleanup visualization list
             activeOscillators.push({
                 freq: freq,
                 startTime: time,
-                duration: currentStyle === 'ambient' ? duration : release, // Visual duration
+                duration: (currentStyle === 'ambient' || currentStyle === 'ethereal') ? duration : release,
                 peak: vol
             });
         }
@@ -460,28 +496,37 @@
         function scheduler() {
             while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
                 // Determine density based on mode AND style
-                let density;
+                let nextGap;
 
                 if (currentStyle === 'ambient') {
-                    density = currentMode === 'sleep' ? 3.0 : 1.5;
-                } else {
-                    // Active mode needs much higher density (faster notes)
-                    density = 0.15; // Very fast
+                    const density = currentMode === 'sleep' ? 3.0 : 1.5;
+                    nextGap = (Math.random() * density) + 0.5;
+                    playNote(nextNoteTime);
+
+                } else if (currentStyle === 'ethereal') {
+                    // Very sparse
+                    nextGap = 2.0 + Math.random() * 3.0;
+                    playNote(nextNoteTime);
+
+                } else if (currentStyle === 'techno') {
+                    // Grid based 
+                    const sixteenth = 0.125; // 120 BPM roughly
+                    // Simple probabilistic sequencer
+                    const r = Math.random();
+                    if (r > 0.1) { // 90% chance to play note (busy)
+                        playNote(nextNoteTime);
+                    }
+                    nextGap = sixteenth;
+                    // Add slight groove?
+                    if (Math.random() > 0.8) nextGap = sixteenth * 2; // Eighth note gap
+
+                } else { // active
+                    const density = 0.15;
+                    nextGap = (Math.random() * 0.2) + density;
+                    playNote(nextNoteTime);
                 }
 
-                // Play a note
-                playNote(nextNoteTime);
-
-                // Schedule next note
-                let gap;
-                if (currentStyle === 'ambient') {
-                    gap = (Math.random() * density) + 0.5;
-                } else {
-                    // More rhythmic for active mode
-                    gap = (Math.random() * 0.2) + density;
-                }
-
-                nextNoteTime += gap;
+                nextNoteTime += nextGap;
             }
             timerID = window.setTimeout(scheduler, lookahead);
         }
