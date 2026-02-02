@@ -225,6 +225,7 @@
                     <option value="active">Neuro Flow (Fast)</option>
                     <option value="ethereal">Ethereal Planes</option>
                     <option value="techno">Neural Techno</option>
+                    <option value="noise">Focus Static (Pink Noise)</option>
                 </select>
             </div>
 
@@ -264,6 +265,7 @@
         let scheduleAheadTime = 0.1; // s
         let timerID;
         let activeOscillators = [];
+        let noiseBuffer; // Reusable buffer for noise
 
         // --- CONSTANTS ---
         // Pentatonic Scale frequencies (C Major Pentatonic) extended across octaves
@@ -322,6 +324,14 @@
 
             // 5. Start the Neural LFO
             startNeuralLFO();
+
+            // 6. Generate White Noise Buffer (cached)
+            const bufferSize = audioCtx.sampleRate * 2; // 2 seconds
+            noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
         }
 
         // --- NEURAL PHASE LOCKING LOGIC ---
@@ -393,6 +403,39 @@
         // --- GENERATIVE MUSIC ENGINE ---
 
         function playNote(time) {
+            // SPECIAL HANDLER FOR NOISE
+            if (currentStyle === 'noise') {
+                const source = audioCtx.createBufferSource();
+                source.buffer = noiseBuffer;
+                source.loop = true;
+
+                // Color the noise (Lowpass filter makes it Pink/Brown)
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 200 + Math.random() * 400; // Varying 'wind' tones
+
+                const noiseGain = audioCtx.createGain();
+
+                // Fade in/out for continuous texture
+                const duration = 2.0 + Math.random();
+                const attack = 1.0;
+                const release = 1.0;
+
+                noiseGain.gain.setValueAtTime(0, time);
+                noiseGain.gain.linearRampToValueAtTime(0.15, time + attack);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, time + duration); // Fade out
+
+                // Connections
+                source.connect(filter);
+                filter.connect(noiseGain);
+                noiseGain.connect(reverbNode);
+
+                source.start(time);
+                source.stop(time + duration + 0.5);
+
+                return; // Skip standard oscillator logic
+            }
+
             // 1. Pick a random note from scale
             let noteScale = SCALE;
 
@@ -501,6 +544,10 @@
                 if (currentStyle === 'ambient') {
                     const density = currentMode === 'sleep' ? 3.0 : 1.5;
                     nextGap = (Math.random() * density) + 0.5;
+                    playNote(nextNoteTime);
+
+                } else if (currentStyle === 'noise') {
+                    nextGap = 1.5; // Consistent overlap (duration is ~2-3s)
                     playNote(nextNoteTime);
 
                 } else if (currentStyle === 'ethereal') {
