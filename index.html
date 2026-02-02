@@ -24,8 +24,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem 0;
+            overflow-y: auto;
         }
 
         .container {
@@ -195,6 +197,122 @@
             text-align: center;
             line-height: 1.4;
         }
+
+        /* Switchboard Styles */
+        .advanced-toggle {
+            width: 100%;
+            background: transparent;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 1rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .advanced-toggle:hover {
+            border-color: var(--primary);
+            color: var(--text);
+        }
+
+        .switchboard {
+            display: none;
+            /* Hidden by default */
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 1.5rem;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .switchboard.visible {
+            display: grid;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sb-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .sb-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--secondary);
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 4px;
+            margin-bottom: 4px;
+        }
+
+        .sb-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .sb-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .sb-io-group {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+        }
+
+        .sb-btn {
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            flex: 1;
+        }
+
+        .sb-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .sb-input-text {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+            padding: 8px;
+            border-radius: 6px;
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 
@@ -242,6 +360,96 @@
             </button>
         </div>
 
+        <button class="advanced-toggle" onclick="toggleSwitchboard()">▼ Advanced Switchboard</button>
+
+        <div class="switchboard" id="switchboard">
+            <!-- Name Section -->
+            <div class="sb-section"
+                style="grid-column: 1 / -1; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+                <div class="sb-title">Soundscape Name</div>
+                <input type="text" class="sb-input-text" id="sbName" placeholder="My Custom Focus Mix"
+                    oninput="updateParam('name', this.value)">
+            </div>
+
+            <!-- Scale Section -->
+            <div class="sb-section">
+                <div class="sb-title">Musical Structure</div>
+                <div class="sb-input-group">
+                    <label class="sb-row">Scale Type</label>
+                    <select id="sbScale" onchange="updateParam('scale', this.value)">
+                        <option value="major">Pentatonic Major (Uplifting)</option>
+                        <option value="minor">Pentatonic Minor (Deep)</option>
+                        <option value="dorian">Dorian (Focus/Tech)</option>
+                        <option value="phrygian">Phrygian (Tense)</option>
+                        <option value="lydian">Lydian (Dreamy)</option>
+                    </select>
+                </div>
+                <div class="sb-input-group">
+                    <label class="sb-row">Base Tuning</label>
+                    <select id="sbTuning" onchange="updateParam('tuning', this.value)">
+                        <option value="440">440 Hz (Standard)</option>
+                        <option value="432">432 Hz (Natural)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Rhythm Section -->
+            <div class="sb-section">
+                <div class="sb-title">Rhythm & Time</div>
+                <div class="sb-input-group">
+                    <div class="sb-row"><span>BPM</span> <span id="valBPM">60</span></div>
+                    <input type="range" min="40" max="160" value="60" oninput="updateParam('bpm', this.value)">
+                </div>
+                <div class="sb-input-group">
+                    <div class="sb-row"><span>Density</span> <span id="valDensity">Medium</span></div>
+                    <input type="range" min="1" max="100" value="50" oninput="updateParam('density', this.value)">
+                </div>
+            </div>
+
+            <!-- Timbre Section -->
+            <div class="sb-section">
+                <div class="sb-title">Timbre Design</div>
+                <div class="sb-input-group">
+                    <label class="sb-row">Waveform A</label>
+                    <select id="sbWave1" onchange="updateParam('wave1', this.value)">
+                        <option value="sine">Sine (Pure)</option>
+                        <option value="triangle">Triangle (Soft)</option>
+                        <option value="sawtooth">Sawtooth (Sharp)</option>
+                        <option value="square">Square (Hollow)</option>
+                    </select>
+                </div>
+                <div class="sb-input-group">
+                    <label class="sb-row">Waveform B</label>
+                    <select id="sbWave2" onchange="updateParam('wave2', this.value)">
+                        <option value="sine">Sine</option>
+                        <option value="triangle">Triangle</option>
+                        <option value="sawtooth">Sawtooth</option>
+                        <option value="square">Square</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Envelope Section -->
+            <div class="sb-section">
+                <div class="sb-title">Envelope</div>
+                <div class="sb-input-group">
+                    <div class="sb-row"><span>Attack (Fade In)</span> <span id="valAtk">Slow</span></div>
+                    <input type="range" min="0" max="100" value="50" oninput="updateParam('attack', this.value)">
+                </div>
+                <div class="sb-input-group">
+                    <div class="sb-row"><span>Release (Tail)</span> <span id="valRel">Long</span></div>
+                    <input type="range" min="0" max="100" value="50" oninput="updateParam('release', this.value)">
+                </div>
+            </div>
+
+            <!-- IO Section -->
+            <div class="sb-io-group">
+                <button class="sb-btn" onclick="exportSettings()">Copy Shareable URL</button>
+                <input type="text" class="sb-input-text" id="importString" placeholder="Paste string or URL...">
+                <button class="sb-btn" onclick="importSettings()">Load</button>
+            </div>
+        </div>
+
         <div class="info">
             Frequency: <span id="freqDisplay" style="color:var(--secondary)">14 Hz (Beta)</span><br>
             Neural phase locking active. Audio modulated to induce synchronization.
@@ -268,12 +476,13 @@
         let noiseBuffer; // Reusable buffer for noise
 
         // --- CONSTANTS ---
-        // Pentatonic Scale frequencies (C Major Pentatonic) extended across octaves
-        const SCALE = [
-            130.81, 146.83, 164.81, 196.00, 220.00, // C3 - A3
-            261.63, 293.66, 329.63, 392.00, 440.00, // C4 - A4
-            523.25, 587.33, 659.25, 783.99, 880.00  // C5 - A5
-        ];
+        const SCALES = {
+            major: [130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99, 880.00], // C Major Pentatonic
+            minor: [130.81, 155.56, 174.61, 196.00, 233.08, 261.63, 311.13, 349.23, 392.00, 466.16, 523.25, 622.25, 698.46, 783.99, 932.33], // C Minor Pentatonic
+            dorian: [146.83, 164.81, 174.61, 196.00, 220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25], // D Dorian
+            phrygian: [130.81, 138.59, 155.56, 174.61, 196.00, 207.65, 233.08, 261.63, 277.18, 311.13, 349.23, 392.00, 415.30, 466.16], // C Phrygian
+            lydian: [130.81, 146.83, 164.81, 185.00, 196.00, 220.00, 246.94, 261.63, 293.66, 329.63, 369.99, 392.00, 440.00, 493.88] // C Lydian
+        };
 
         const MODES = {
             focus: { freq: 14, type: 'sawtooth', label: '14 Hz (Beta)' }, // Alert, sharp pulses
@@ -283,7 +492,125 @@
         };
 
         let currentMode = 'focus';
-        let currentStyle = 'ambient';
+
+        // Default Params (Ambient)
+        let currentParams = {
+            name: 'Custom Mix',
+            scale: 'major',
+            tuning: 440,
+            bpm: 60,
+            density: 50,
+            wave1: 'sine',
+            wave2: 'triangle',
+            attack: 50,
+            release: 50
+        };
+
+        // --- SWITCHBOARD LOGIC ---
+        // Check for URL config on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const config = params.get('config');
+            if (config) {
+                try {
+                    const parsed = JSON.parse(atob(config));
+                    Object.keys(currentParams).forEach(k => {
+                        if (parsed[k] !== undefined) currentParams[k] = parsed[k];
+                    });
+                    syncUI();
+
+                    // If name exists, show it in the header momentarily or alert? 
+                    // Let's just update the name field (handled by syncUI).
+
+                    // Auto-open and focus
+                    const sb = document.getElementById('switchboard');
+                    if (!sb.classList.contains('visible')) {
+                        toggleSwitchboard();
+                    }
+                    setTimeout(() => {
+                        sb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 500); // Small delay to ensure render
+                } catch (e) {
+                    console.error("Invalid URL Config", e);
+                }
+            }
+        });
+
+        function toggleSwitchboard() {
+            const sb = document.getElementById('switchboard');
+            sb.classList.toggle('visible');
+            const btn = document.querySelector('.advanced-toggle');
+            btn.innerText = sb.classList.contains('visible') ? '▲ Hide Switchboard' : '▼ Advanced Switchboard';
+        }
+
+        function updateParam(key, value) {
+            currentParams[key] = value;
+
+            // Update UI Labels
+            if (key === 'bpm') document.getElementById('valBPM').innerText = value;
+            if (key === 'density') {
+                const map = value < 30 ? 'Sparse' : value > 70 ? 'Dense' : 'Medium';
+                document.getElementById('valDensity').innerText = map;
+            }
+            if (key === 'attack') document.getElementById('valAtk').innerText = value + '%';
+            if (key === 'release') document.getElementById('valRel').innerText = value + '%';
+        }
+
+        function exportSettings() {
+            const str = btoa(JSON.stringify(currentParams));
+            // Construct full URL
+            const url = `${window.location.origin}${window.location.pathname}?config=${str}`;
+            navigator.clipboard.writeText(url);
+            alert("Shareable URL copied to clipboard!");
+        }
+
+        function importSettings() {
+            let val = document.getElementById('importString').value.trim();
+            // Handle if user pasted full URL by extracting the config param
+            if (val.includes('config=')) {
+                try {
+                    val = val.split('config=')[1];
+                } catch (e) { }
+            }
+
+            try {
+                const params = JSON.parse(atob(val));
+                // Validate keys safely
+                Object.keys(currentParams).forEach(k => {
+                    if (params[k] !== undefined) currentParams[k] = params[k];
+                });
+                syncUI();
+                alert(`Loaded: ${currentParams.name || 'Configuration'}`);
+            } catch (e) {
+                alert("Invalid Configuration String or URL");
+            }
+        }
+
+        function syncUI() {
+            // Update all inputs to match currentParams
+            document.getElementById('sbName').value = currentParams.name || '';
+            document.getElementById('sbScale').value = currentParams.scale;
+            document.getElementById('sbTuning').value = currentParams.tuning;
+            document.getElementById('sbWave1').value = currentParams.wave1;
+            document.getElementById('sbWave2').value = currentParams.wave2;
+
+            // Trigger manual updates for sliders to update text
+            const bpmSlider = document.querySelector('input[oninput*="bpm"]');
+            bpmSlider.value = currentParams.bpm;
+            updateParam('bpm', currentParams.bpm);
+
+            const densitySlider = document.querySelector('input[oninput*="density"]');
+            densitySlider.value = currentParams.density;
+            updateParam('density', currentParams.density);
+
+            const atkSlider = document.querySelector('input[oninput*="attack"]');
+            atkSlider.value = currentParams.attack;
+            updateParam('attack', currentParams.attack);
+
+            const relSlider = document.querySelector('input[oninput*="release"]');
+            relSlider.value = currentParams.release;
+            updateParam('release', currentParams.release);
+        }
 
         // --- UI ELEMENTS ---
         const canvas = document.getElementById('visualizer');
@@ -364,7 +691,35 @@
         }
 
         function setStyle(style) {
-            currentStyle = style;
+            // Preset Logic: Applying profiles to the Switchboard
+            switch (style) {
+                case 'ambient':
+                    currentParams = { scale: 'major', tuning: 440, bpm: 60, density: 40, wave1: 'sine', wave2: 'triangle', attack: 60, release: 80 };
+                    break;
+                case 'active':
+                    currentParams = { scale: 'dorian', tuning: 440, bpm: 110, density: 75, wave1: 'triangle', wave2: 'sawtooth', attack: 10, release: 30 };
+                    break;
+                case 'ethereal':
+                    currentParams = { scale: 'lydian', tuning: 432, bpm: 40, density: 20, wave1: 'sine', wave2: 'sine', attack: 80, release: 95 };
+                    break;
+                case 'techno':
+                    currentParams = { scale: 'phrygian', tuning: 440, bpm: 128, density: 85, wave1: 'square', wave2: 'sawtooth', attack: 5, release: 25 };
+                    break;
+                case 'noise':
+                    // Noise is special, but we set some defaults
+                    currentParams = { scale: 'minor', tuning: 440, bpm: 30, density: 100, wave1: 'sine', wave2: 'sine', attack: 50, release: 50 };
+                    break;
+            }
+            // If noise is selected, we track it for the internal switch (or we could make 'type' a param)
+            // For now, we rely on the Select element value or check currentParams if we wanted. 
+            // Actually, let's store the 'style' strictly for the "Noise" special logic in playNote.
+            // But 'Noise' mode logic is invasive. Let's handle it by checking the Select box value directly in playNote 
+            // OR we add a 'mode' to params. 
+
+            // To keep it simple: We keep the dropdown value as the source of truth for "Special Modes" (Noise),
+            // but for all "Musical Modes", we use params.
+
+            syncUI();
         }
 
         function updateIntensity() {
@@ -403,8 +758,10 @@
         // --- GENERATIVE MUSIC ENGINE ---
 
         function playNote(time) {
+            const style = document.getElementById('styleSelect').value;
+
             // SPECIAL HANDLER FOR NOISE
-            if (currentStyle === 'noise') {
+            if (style === 'noise') {
                 const source = audioCtx.createBufferSource();
                 source.buffer = noiseBuffer;
                 source.loop = true;
@@ -433,63 +790,29 @@
                 source.start(time);
                 source.stop(time + duration + 0.5);
 
-                return; // Skip standard oscillator logic
+                return;
             }
 
-            // 1. Pick a random note from scale
-            let noteScale = SCALE;
+            // 1. Pick a note from Valid Scale
+            const scaleName = currentParams.scale || 'major';
+            let noteScale = SCALES[scaleName] || SCALES.major;
 
-            if (currentStyle === 'active') {
-                noteScale = SCALE.slice(5); // Remove lowest octave
-            } else if (currentStyle === 'ethereal') {
-                noteScale = SCALE.slice(7); // ONLY high octaves
-            } else if (currentStyle === 'techno') {
-                // Bias towards Bass + Mids
-                noteScale = SCALE.slice(0, 10);
-            }
+            const rawFreq = noteScale[Math.floor(Math.random() * noteScale.length)];
 
-            // Techno bass override
-            if (currentStyle === 'techno' && Math.random() < 0.3) {
-                noteScale = [SCALE[0], SCALE[3]]; // Force root or 5th bass sometimes
-            }
-
-            const freq = noteScale[Math.floor(Math.random() * noteScale.length)];
+            // Apply Tuning Shift
+            const tuningRatio = (currentParams.tuning || 440) / 440;
+            const freq = rawFreq * tuningRatio;
 
             // DURATION & ENVELOPE LOGIC
-            let duration, attack, release, wave1, wave2, vol;
+            // Map 0-100 sliders to useful time values
+            const attack = 0.01 + (currentParams.attack / 100) * 3.0;
+            const release = 0.1 + (currentParams.release / 100) * 8.0;
+            const duration = attack + release; // Visual duration
 
-            if (currentStyle === 'ambient') {
-                duration = 2 + Math.random() * 4;
-                attack = duration * 0.2;
-                release = duration;
-                wave1 = 'sine';
-                wave2 = 'triangle';
-                vol = 0.05 + Math.random() * 0.05;
+            const wave1 = currentParams.wave1 || 'sine';
+            const wave2 = currentParams.wave2 || 'triangle';
 
-            } else if (currentStyle === 'ethereal') {
-                duration = 4.0 + Math.random() * 4.0;
-                attack = 2.0;
-                release = 5.0; // Massive tail
-                wave1 = 'sine';
-                wave2 = 'sine'; // Pure tones
-                vol = 0.03; // Quiet
-
-            } else if (currentStyle === 'techno') {
-                duration = 0.15;
-                attack = 0.001;
-                release = 0.2; // Plucky
-                wave1 = 'square';
-                wave2 = 'sawtooth'; // Aggressive
-                vol = 0.04;
-
-            } else { // active
-                duration = 0.3 + Math.random() * 0.2;
-                attack = 0.01;
-                release = 0.4;
-                wave1 = 'triangle';
-                wave2 = 'sawtooth';
-                vol = 0.03 + Math.random() * 0.03;
-            }
+            const vol = 0.05 + Math.random() * 0.05;
 
             // 2. Create Oscillators
             const osc1 = audioCtx.createOscillator();
@@ -500,13 +823,12 @@
 
             osc1.frequency.value = freq;
 
-            // Detune logic
-            if (currentStyle === 'ethereal') {
-                osc2.frequency.value = freq * 1.01; // Shimmer
-            } else if (currentStyle === 'techno') {
-                osc2.frequency.value = freq * 0.5; // Sub oscillator octave down!
-            } else {
-                osc2.frequency.value = freq * 1.005;
+            // Detune / Sub-bass logic
+            osc2.frequency.value = freq * 1.005;
+
+            // If Techno (High BPM + Square/Saw), add sub-bass
+            if (currentParams.bpm > 115 && (wave1 === 'square' || wave2 === 'square')) {
+                osc2.frequency.value = freq * 0.5;
             }
 
             // 3. Envelope (ADSR)
@@ -514,7 +836,7 @@
 
             noteGain.gain.setValueAtTime(0, time);
             noteGain.gain.linearRampToValueAtTime(vol, time + attack);
-            noteGain.gain.exponentialRampToValueAtTime(0.001, time + release);
+            noteGain.gain.exponentialRampToValueAtTime(0.001, time + attack + release);
 
             // 4. Connect
             osc1.connect(noteGain);
@@ -524,53 +846,39 @@
             // 5. Start/Stop
             osc1.start(time);
             osc2.start(time);
-            osc1.stop(time + release + 1);
-            osc2.stop(time + release + 1);
+            osc1.stop(time + attack + release + 1);
+            osc2.stop(time + attack + release + 1);
 
             // Cleanup visualization list
             activeOscillators.push({
                 freq: freq,
                 startTime: time,
-                duration: (currentStyle === 'ambient' || currentStyle === 'ethereal') ? duration : release,
+                duration: attack + release,
                 peak: vol
             });
         }
 
         function scheduler() {
             while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
-                // Determine density based on mode AND style
+                const style = document.getElementById('styleSelect').value;
                 let nextGap;
 
-                if (currentStyle === 'ambient') {
-                    const density = currentMode === 'sleep' ? 3.0 : 1.5;
-                    nextGap = (Math.random() * density) + 0.5;
+                if (style === 'noise') {
+                    nextGap = 1.5;
                     playNote(nextNoteTime);
+                } else {
+                    // BPM & Density Logic
+                    const beatDur = 60 / currentParams.bpm;
+                    const density = currentParams.density / 100;
 
-                } else if (currentStyle === 'noise') {
-                    nextGap = 1.5; // Consistent overlap (duration is ~2-3s)
-                    playNote(nextNoteTime);
-
-                } else if (currentStyle === 'ethereal') {
-                    // Very sparse
-                    nextGap = 2.0 + Math.random() * 3.0;
-                    playNote(nextNoteTime);
-
-                } else if (currentStyle === 'techno') {
-                    // Grid based 
-                    const sixteenth = 0.125; // 120 BPM roughly
-                    // Simple probabilistic sequencer
-                    const r = Math.random();
-                    if (r > 0.1) { // 90% chance to play note (busy)
+                    if (Math.random() < density) {
                         playNote(nextNoteTime);
                     }
-                    nextGap = sixteenth;
-                    // Add slight groove?
-                    if (Math.random() > 0.8) nextGap = sixteenth * 2; // Eighth note gap
 
-                } else { // active
-                    const density = 0.15;
-                    nextGap = (Math.random() * 0.2) + density;
-                    playNote(nextNoteTime);
+                    nextGap = beatDur;
+
+                    // Sparse logic for low density
+                    if (density < 0.3 && Math.random() > 0.5) nextGap *= 2;
                 }
 
                 nextNoteTime += nextGap;
