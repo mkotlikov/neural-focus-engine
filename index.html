@@ -631,7 +631,7 @@
 
             // 1. Create Master Output Chain
             masterGain = audioCtx.createGain();
-            masterGain.gain.value = 0.5;
+            masterGain.gain.value = 1.0;
 
             // 2. Create Neural Modulator (The Core Tech)
             // The music goes into this gain node, and this gain node is automated by the LFO
@@ -779,13 +779,14 @@
                 const release = 1.0;
 
                 noiseGain.gain.setValueAtTime(0, time);
-                noiseGain.gain.linearRampToValueAtTime(0.15, time + attack);
+                noiseGain.gain.linearRampToValueAtTime(0.8, time + attack);
                 noiseGain.gain.exponentialRampToValueAtTime(0.001, time + duration); // Fade out
 
-                // Connections
+                // Connections (Parallel Dry/Wet for Loudness)
                 source.connect(filter);
                 filter.connect(noiseGain);
-                noiseGain.connect(reverbNode);
+                noiseGain.connect(neuralModulatorGain); // Dry
+                noiseGain.connect(reverbNode);          // Wet
 
                 source.start(time);
                 source.stop(time + duration + 0.5);
@@ -812,7 +813,7 @@
             const wave1 = currentParams.wave1 || 'sine';
             const wave2 = currentParams.wave2 || 'triangle';
 
-            const vol = 0.05 + Math.random() * 0.05;
+            const vol = 0.4 + Math.random() * 0.1;
 
             // 2. Create Oscillators
             const osc1 = audioCtx.createOscillator();
@@ -838,10 +839,11 @@
             noteGain.gain.linearRampToValueAtTime(vol, time + attack);
             noteGain.gain.exponentialRampToValueAtTime(0.001, time + attack + release);
 
-            // 4. Connect
+            // 4. Connect (Parallel Dry/Wet)
             osc1.connect(noteGain);
             osc2.connect(noteGain);
-            noteGain.connect(reverbNode);
+            noteGain.connect(neuralModulatorGain); // Dry
+            noteGain.connect(reverbNode);          // Wet
 
             // 5. Start/Stop
             osc1.start(time);
