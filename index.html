@@ -330,6 +330,7 @@
             // The LFO (Low Frequency Oscillator) that creates the "beat"
             neuralLFO = audioCtx.createOscillator();
             neuralLFO.frequency.value = MODES[currentMode].freq;
+            neuralLFO.type = MODES[currentMode].type; // Set shape (sine/sawtooth)
 
             // To modulate gain (volume), we need to map the LFO (-1 to 1) 
             // to a Gain value (e.g., 0.5 to 1.0).
@@ -383,6 +384,7 @@
                 const now = audioCtx.currentTime;
                 // Ramp frequency smoothly
                 neuralLFO.frequency.setTargetAtTime(MODES[mode].freq, now, 1.0);
+                neuralLFO.type = MODES[mode].type; // Update shape instantly
             }
         }
 
