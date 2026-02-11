@@ -1,47 +1,56 @@
-# Neural Focus Engine 🧠🎧
+# Neural Phase Locking Focus Engine 🧠🎧
 
-The Neural Focus Engine is a browser-based generative audio application designed to enhance cognitive states through Neural Phase Locking.
+The **Neural Phase Locking Focus Engine** is a browser-based, open-source auditory entrainment tool designed to improve focus and cognitive state. Unlike traditional binaural beat apps that rely on a single mechanism, this engine utilizes a **Dual-Layer Entrainment** strategy to target the brain's synchronization mechanisms from two distinct angles simultaneously.
 
-Unlike traditional playlists or loops, this engine uses real-time generative code to create infinite, non-repetitive musical textures that are modulated at specific brainwave frequencies. The result is a focus tool that helps you enter deep work states without the "listener fatigue" caused by repetitive audio loops.
+**Zero Dependencies.** This application is contained within a single HTML file with no external links, CDNs, or third-party scripts. It is privacy-focused and can be hosted offline.
 
-## Features
+## Core Mechanisms
 
-### Neural Entrainment Modes
+### 1. Layer 1: Binaural Beats (Internal Entrainment)
+*   **Mechanism:** Generates two pure sine waves with a slight frequency difference (e.g., 200Hz Left, 214Hz Right).
+*   **Effect:** The brainstem (Superior Olivary Complex) processes this difference to create a perceived "beat" of 14Hz.
+*   **Target:** Promotes **hemispheric synchronization** and sets the baseline cognitive state.
 
-The engine uses Amplitude Modulation (AM) to pulse the audio volume, encouraging neural synchronization:
+### 2. Layer 2: Neural Phase Locking (External Entrainment)
+*   **Mechanism:** An Amplitude Modulation (AM) oscillator pulses the volume of the carrier tones at a high speed (Gamma frequencies).
+*   **Effect:** The Auditory Cortex directly "locks" onto this physical rhythm.
+*   **Target:** Triggers **Gamma synchrony**, associated with high-level information binding and problem-solving.
 
-* Create (Gamma 40Hz): High-frequency pulsing for peak concentration and problem-solving.
-* Focus (Beta 14Hz): Alert, sharp pulses for sustained attention.
-* Relax (Alpha 10Hz): Smoother pulses for calm and light meditation.
-* Sleep (Delta 2Hz): Deep, rolling waves for rest.
+## The "Golden Ratio" Settings (Defaults)
 
-### Adaptive Soundscapes
+The app initializes with a specific mix designed for deep work:
 
-* Ambient Drift: Slow, washing textures optimized for long-duration listening.
-* Neuro Flow: Fast, arpeggiated styles with sharp envelopes for high-energy tasks.
+*   **Carrier Frequency:** `200 Hz` (Non-fatiguing base)
+*   **Binaural Beat:** `14 Hz` (Beta - Active external attention)
+*   **Phase Lock (AM):** `40 Hz` (Gamma - Cognitive binding)
+*   **The Mix:**
+    *   **Brown Noise (60%):** A "sonic wall" to mask external distractions.
+    *   **Isochronic Tones (20%):** kept low to prevent listening fatigue.
+    *   **AM Depth (40%):** Moderate pulse to trigger phase locking without annoyance.
 
-### Advanced Controls
+## User Interface
 
-* Neural Intensity Slider: Control the depth of the modulation (0% = pure music, 100% = heavy entrainment).
-* Real-time Visualizer: See the specific brainwave frequency and note events as they happen.
+*   **Aesthetic:** "Slate & Blue" dark mode to reduce eye strain.
+*   **Visualizer:** Real-time oscilloscope (HTML5 Canvas) showing phase coherence.
+*   **Controls:** Granular sliders for Frequency (Carrier, Beat, AM) and Mixer (Tone, Noise, Depth).
+*   **Presets:**
+    *   `🚀 Deep Focus` (Beta/Gamma)
+    *   `🌊 Flow State` (Alpha/Beta)
+    *   `🌙 Relaxation` (Theta)
 
-## Quick Start
+## Technical Implementation
 
-Simply open the index.html file in any modern web browser (Chrome, Firefox, Safari, Edge). No server is required for local use.
+*   **Stack:** Single-file `index.html` (HTML/CSS/JS).
+*   **Audio Engine:** **Web Audio API** (Native).
+*   **Precision:** Real-time synthesis using 64-bit floating-point precision. No pre-recorded MP3s.
+*   **Brown Noise:** Custom buffer algorithm with 1/f² spectral slope for warmth.
 
-## Technical Architecture
+## Usage
 
-* Frontend: Pure HTML5, CSS3, Vanilla JavaScript.
-* Audio Engine: Web Audio API (Native browser support).
-* Synthesis: 
-    * Generative Sequencer: Stochastic scheduler picking from a Pentatonic scale.
-    * Algorithmic Reverb: Mathematically generated impulse responses using decaying white noise.
-    * LFO Modulation: A Low-Frequency Oscillator acts as a "gate" for the master volume to induce phase locking.
+Simply open `index.html` in any modern web browser. 
 
-## Usage Guide
-
-* Initialize: Click "Initialize Engine" to start the audio context.
-* Select Mode: Choose your desired cognitive state (Create, Focus, Relax, Sleep).
-* Select Style: Choose between "Ambient Drift" or "Neuro Flow".
-* Adjust Intensity: Use the slider to find a comfortable level of pulsing.
-    * Tip: 50% is the recommended sweet spot for effective entrainment without distraction.
+```bash
+# To run locally with a simple server (optional, but recommended for some browser security policies)
+python3 -m http.server
+# Open http://localhost:8000
+```
